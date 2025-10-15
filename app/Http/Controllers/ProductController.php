@@ -152,4 +152,11 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'Product restocked successfully.');
     }
+
+
+    public function entryClerkDashboard()
+{
+    $products = Product::latest()->paginate(10);
+    return view('entry_clerk.dashboard', compact('products'));
+}
 }

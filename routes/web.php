@@ -80,6 +80,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
 });
 
+Route::get('/entry-clerk/dashboard', [ProductController::class, 'entryClerkDashboard'])
+    ->middleware(['auth', 'role:entry_clerk'])
+    ->name('entryClerk.dashboard');
+
+// Manager Dashboard
+Route::get('/manager/dashboard', [ManagerController::class, 'dashboard'])
+    ->middleware(['auth', 'role:manager'])
+    ->name('manager.dashboard');
+
+// Product Index (Manager only)
+Route::get('/products', [ProductController::class, 'index'])
+    ->middleware(['auth', 'role:manager'])
+    ->name('products.index');
+
+
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
