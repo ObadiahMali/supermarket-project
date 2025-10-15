@@ -1,0 +1,38 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+h1, h2, h3 {
+    font-weight: 600;
+}
+
+.btn-admin, .btn-manager, .btn-cashier {
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-admin {
+    background: linear-gradient(to right, #007bff, #00c6ff);
+}
+
+.btn-manager {
+    background: linear-gradient(to right, #28a745, #85dcb0);
+}
+
+.btn-cashier {
+    background: linear-gradient(to right, #ffc107, #ff7e5f);
+}
+
+.btn-admin:hover,
+.btn-manager:hover,
+.btn-cashier:hover {
+    opacity: 0.85;
+    transform: scale(1.02);
+}
