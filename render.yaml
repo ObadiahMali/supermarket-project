@@ -2,24 +2,38 @@ services:
   - type: web
     name: supermarket-app
     env: docker
-    plan: free
     repo: https://github.com/ObadiahMali/supermarket-project
     branch: master
-    dockerfilePath: Dockerfile
+    plan: free
     envVars:
-      - key: APP_ENV
-        value: production
-      - key: APP_KEY
-        value: base64:your-generated-key
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
-        value: your-db-host
+        value: supermarket-db
       - key: DB_PORT
         value: 3306
       - key: DB_DATABASE
-        value: your-db-name
+        value: malis_supermarket
       - key: DB_USERNAME
-        value: your-db-user
+        value: malis_user
       - key: DB_PASSWORD
+        value: your-db-password
+
+  - type: private
+    name: supermarket-db
+    env: docker
+    plan: starter
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 5
+    dockerfilePath: ./mysql.Dockerfile
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        value: rootpass
+      - key: MYSQL_DATABASE
+        value: malis_supermarket
+      - key: MYSQL_USER
+        value: malis_user
+      - key: MYSQL_PASSWORD
         value: your-db-password
