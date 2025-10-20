@@ -30,8 +30,8 @@ RUN npm install && npm run build
 # ✅ Generate app key
 RUN php artisan key:generate
 
-# ✅ Cache config (optional but recommended)
-RUN php artisan config:cache
+# ✅ Clear and cache config to ensure correct DB driver
+RUN php artisan config:clear && php artisan config:cache
 
 # ✅ Expose port for Laravel's internal server
 EXPOSE 8000
