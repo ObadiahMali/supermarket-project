@@ -18,8 +18,8 @@ WORKDIR /var/www
 # Copy project files
 COPY . .
 
-# ✅ Create .env file from example
-RUN cp .env.example .env
+# ✅ Use production environment file
+COPY .env.production .env
 
 # ✅ Install PHP dependencies
 RUN composer install --optimize-autoloader --no-dev
@@ -32,6 +32,9 @@ RUN php artisan key:generate
 
 # ✅ Clear and cache config to ensure correct DB driver
 RUN php artisan config:clear && php artisan config:cache
+
+# ✅ Run database migrations
+RUN php artisan migrate --force
 
 # ✅ Expose port for Laravel's internal server
 EXPOSE 8000
