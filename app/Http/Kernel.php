@@ -1,23 +1,12 @@
 <?php
-
 namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Spatie\Permission\Middleware\RoleMiddleware; // <-- singular Middleware
 
-// ✅ Add these if missing
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use App\Http\Middleware\EncryptCookies;
-use App\Http\Middleware\VerifyCsrfToken;
-use App\Http\Middleware\Authenticate;
-use App\Http\Middleware\RoleMiddleware;
 class Kernel extends HttpKernel
 {
     protected $middleware = [
-        // global middleware
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         \Illuminate\Session\Middleware\StartSession::class,
         \Illuminate\View\Middleware\ShareErrorsFromSession::class,
@@ -41,10 +30,8 @@ class Kernel extends HttpKernel
 
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
-        'role' => \App\Http\Middleware\RoleMiddleware::class, // ✅ Register your role middleware here
-        
-        
+        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'role' => RoleMiddleware::class, // Corrected namespace import
     ];
-
-    
 }
+

@@ -13,6 +13,7 @@ class DashboardController extends Controller
             return redirect()->route('login');
         }
 
+        
         $role = Auth::user()->role;
 
         return match ($role) {

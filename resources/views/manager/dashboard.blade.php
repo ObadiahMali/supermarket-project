@@ -65,6 +65,9 @@
     }
 </style>
 
+
+
+
 <div class="container dashboard-wrapper">
     <h1 class="mb-4 text-highlight">Manager Dashboard</h1>
 

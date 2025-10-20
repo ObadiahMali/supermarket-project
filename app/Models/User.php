@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -15,7 +15,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
     ];
 
     protected $hidden = [
@@ -30,16 +29,4 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
-    public function isCashier() {
-    return $this->role === 'cashier';
-}
-
-public function isEntryClerk() {
-    return $this->role === 'entry_clerk';
-}
-
-public function isManager() {
-    return $this->role === 'manager';
-}
 }

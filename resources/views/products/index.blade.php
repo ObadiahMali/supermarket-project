@@ -115,71 +115,73 @@
         </div>
 
         {{-- ➕ Add Product --}}
-        @if(auth()->user()->role === 'entry_clerk' || auth()->user()->role === 'manager')
+        @if(auth()->user()->hasRole('entry_clerk') || auth()->user()->hasRole('manager'))
             <a href="{{ route('products.create') }}" class="btn btn-admin mb-3">
                 <i class="fas fa-plus-circle"></i> Add Product
             </a>
         @endif
 
         {{-- 📦 Product Table --}}
-        <table class="table table-bordered table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Price (UGX)</th>
-                    <th>Category</th>
-                    <th>Stock</th>
-                    <th>QR Code</th>
-                    <th>Image</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($products as $product)
-                <tr>
-                    <td>{{ ($products->currentPage() - 1) * $products->perPage() + $loop->iteration }}</td>
-                    <td>{{ $product->name }}</td>
-                    <td>{{ number_format($product->price) }}</td>
-                    <td>{{ ucfirst($product->category) }}</td>
-                    <td>
-                        @if($product->stock <= 5)
-                            <span class="badge bg-danger">Low ({{ $product->stock }})</span>
-                        @else
-                            <span class="badge bg-success">{{ $product->stock }}</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($product->qr_code_path)
-                            <img src="{{ asset('storage/' . $product->qr_code_path) }}" alt="QR" width="60">
-                        @endif
-                    </td>
-                    <td>
-                        @if($product->image_path)
-                            <img src="{{ asset('storage/' . $product->image_path) }}" alt="Image" width="60">
-                        @endif
-                    </td>
-                    <td>
-                        @if(auth()->user()->role === 'manager')
-                            <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-manager">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('products.destroy', $product->id) }}" method="POST" style="display:inline;">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this product?')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        @endif
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="8" class="text-center">No products found.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Price (UGX)</th>
+                        <th>Category</th>
+                        <th>Stock</th>
+                        <th>QR Code</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($products as $product)
+                    <tr>
+                        <td>{{ ($products->currentPage() - 1) * $products->perPage() + $loop->iteration }}</td>
+                        <td>{{ $product->name }}</td>
+                        <td>{{ number_format($product->price) }}</td>
+                        <td>{{ ucfirst($product->category) }}</td>
+                        <td>
+                            @if($product->stock <= 5)
+                                <span class="badge bg-danger">Low ({{ $product->stock }})</span>
+                            @else
+                                <span class="badge bg-success">{{ $product->stock }}</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($product->qr_code_path)
+                                <img src="{{ asset('storage/' . $product->qr_code_path) }}" alt="QR" width="60">
+                            @endif
+                        </td>
+                        <td>
+                            @if($product->image_path)
+                                <img src="{{ asset('storage/' . $product->image_path) }}" alt="Image" width="60">
+                            @endif
+                        </td>
+                        <td>
+                            @if(auth()->user()->hasRole('manager'))
+                                <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-manager">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('products.destroy', $product->id) }}" method="POST" style="display:inline;">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this product?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="text-center">No products found.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
         {{-- 📄 Pagination --}}
         <div class="d-flex justify-content-center mt-4">

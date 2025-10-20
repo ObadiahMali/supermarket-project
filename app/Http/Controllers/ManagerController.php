@@ -55,4 +55,7 @@ class ManagerController extends Controller
             'categories'
         ));
     }
+
+
+
 }

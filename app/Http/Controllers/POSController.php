@@ -16,7 +16,7 @@ class POSController extends Controller
     {
         $cart = Session::get('cart', []);
         $cartTotal = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
-        $products = Product::orderBy('name')->get();
+        $products = Product::orderBy('name')->get(); // ✅ loads all products
 
         return view('pos.index', compact('cart', 'cartTotal', 'products'));
     }
@@ -104,7 +104,7 @@ class POSController extends Controller
             ]);
 
             $product = Product::find($item['id']);
-            if ($product) {
+            if ($product && $product->stock >= $item['quantity']) {
                 $product->decrement('stock', $item['quantity']);
             }
         }

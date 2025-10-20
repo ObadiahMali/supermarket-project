@@ -3,10 +3,87 @@
 @section('title', "Mali's Supermarket — POS")
 
 @section('content')
+<style>
+    body {
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+        color: white;
+    }
+
+    .custom-pos-header {
+        background: rgba(40, 167, 69, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .custom-pos-header h4 {
+        font-weight: bold;
+        font-size: 1.25rem;
+    }
+
+    .custom-pos-header .btn-outline-dark {
+        border-color: white;
+        color: white;
+    }
+
+    .custom-pos-header .btn-outline-dark:hover {
+        background-color: white;
+        color: #28a745;
+    }
+
+    .form-control, .form-select {
+        border-radius: 6px;
+    }
+
+    .btn-primary, .btn-success {
+        border-radius: 6px;
+    }
+
+    .btn-outline-info {
+        border-radius: 6px;
+    }
+
+    .table {
+        color: white;
+    }
+
+    .table thead th {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #000;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .alert {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+    }
+</style>
+
+@php
+    $user = auth()->user();
+    $dashboardRoute = match(true) {
+        $user->hasRole('manager') => route('manager.dashboard'),
+        $user->hasRole('cashier') => route('cashier.dashboard'),
+        $user->hasRole('entry_clerk') => route('entryClerk.dashboard'),
+        default => route('dashboard'),
+    };
+@endphp
+
 <div class="card mt-4">
-    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+    <div class="card-header custom-pos-header d-flex justify-content-between align-items-center">
         <h4><i class="fas fa-cash-register"></i> Point of Sale</h4>
-        <a href="{{ route('dashboard') }}" class="btn btn-sm btn-outline-dark">
+        <a href="{{ $dashboardRoute }}" class="btn btn-sm btn-outline-dark">
             <i class="fas fa-home"></i> Back to Dashboard
         </a>
     </div>
@@ -48,55 +125,59 @@
         </button>
 
         <div id="product-list" style="display: none;">
-            <table class="table table-bordered">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($products as $product)
+                        <tr>
+                            <td>{{ $product->name }}</td>
+                            <td>UGX {{ number_format($product->price) }}</td>
+                            <td>{{ $product->stock }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Cart Table --}}
+        <h5 class="mt-4">🛒 Current Cart</h5>
+        <div class="table-responsive">
+            <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Product</th>
+                        <th>Qty</th>
                         <th>Price</th>
-                        <th>Stock</th>
+                        <th>Total</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($products as $product)
+                    @foreach ($cart as $item)
                     <tr>
-                        <td>{{ $product->name }}</td>
-                        <td>UGX {{ number_format($product->price) }}</td>
-                        <td>{{ $product->stock }}</td>
+                        <td>{{ $item['name'] }}</td>
+                        <td>{{ $item['quantity'] }}</td>
+                        <td>{{ number_format($item['price']) }}</td>
+                        <td>{{ number_format($item['price'] * $item['quantity']) }}</td>
+                        <td>
+                            <form method="POST" action="{{ route('cart.remove', $item['id']) }}">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
+                            </form>
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
-
-        {{-- Cart Table --}}
-        <h5 class="mt-4">🛒 Current Cart</h5>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($cart as $item)
-                <tr>
-                    <td>{{ $item['name'] }}</td>
-                    <td>{{ $item['quantity'] }}</td>
-                    <td>{{ number_format($item['price']) }}</td>
-                    <td>{{ number_format($item['price'] * $item['quantity']) }}</td>
-                    <td>
-                        <form method="POST" action="{{ route('cart.remove', $item['id']) }}">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
 
         {{-- Checkout Form --}}
         <div class="text-end mt-4">

@@ -84,8 +84,8 @@
                 <!-- Role -->
                 <select name="role" id="role" required>
                     <option value="">Select Role</option>
-                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="manager" {{ old('role') === 'manager' ? 'selected' : '' }}>Manager</option>
+                    <option value="entry_clerk" {{ old('role') === 'entry_clerk' ? 'selected' : '' }}>Entry Clerk</option>
                     <option value="cashier" {{ old('role') === 'cashier' ? 'selected' : '' }}>Cashier</option>
                 </select>
                 <x-input-error :messages="$errors->get('role')" class="mt-2 text-danger" />

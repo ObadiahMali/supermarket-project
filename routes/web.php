@@ -15,113 +15,95 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ReportsController;
+use Spatie\Permission\Models\Role;
 
+// 🌐 Public landing page
 Route::get('/', function () {
     return view('welcome');
 });
 
-// ✅ Custom registration logic to save role
+// 📝 Registration with Spatie role assignment
 Route::post('/register', function (Request $request) {
     Validator::make($request->all(), [
         'name' => ['required', 'string', 'max:255'],
         'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
         'password' => ['required', 'string', 'min:8', 'confirmed'],
-        'role' => ['required', 'in:admin,manager,cashier'],
+        'role' => ['required', 'in:manager,entry_clerk,cashier'],
     ])->validate();
+
+    Role::firstOrCreate(['name' => $request->role, 'guard_name' => 'web']);
 
     $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->password),
-        'role' => $request->role,
     ]);
 
+    $user->assignRole($request->role);
     Auth::login($user);
 
-    return redirect('/dashboard');
+    switch ($request->role) {
+        case 'manager':
+            return redirect()->route('manager.dashboard');
+        case 'cashier':
+            return redirect()->route('cashier.dashboard');
+        case 'entry_clerk':
+            return redirect()->route('entryClerk.dashboard');
+        default:
+            return redirect('/dashboard');
+    }
 });
 
+// 🔐 Logout
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/');
+})->name('logout');
 
-Route::middleware(['auth', 'role:cashier,manager'])->group(function () {
-    Route::get('/pos', [POSController::class, 'index'])->name('pos.index');
-});
-
-Route::middleware(['auth', 'role:entry_clerk,manager'])->group(function () {
-    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-});
-
-
-Route::middleware(['auth', 'role:manager'])->group(function () {
-    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
-    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-});
-
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-});
-// Role-based dashboard redirect
+// 🧭 Default dashboard (fallback)
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-// Protected routes for each role
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/manager/dashboard', [ManagerController::class, 'index'])->name('manager.dashboard');
-    Route::get('/cashier/dashboard', [CashierController::class, 'index'])->name('cashier.dashboard');
-});
+// 🧑‍💼 Manager dashboard
+Route::get('/manager/dashboard', [ManagerController::class, 'index'])
+    ->middleware(['auth', 'role:manager'])
+    ->name('manager.dashboard');
 
-// Product routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-});
-
+// 🧾 Entry Clerk dashboard
 Route::get('/entry-clerk/dashboard', [ProductController::class, 'entryClerkDashboard'])
     ->middleware(['auth', 'role:entry_clerk'])
     ->name('entryClerk.dashboard');
 
-// Manager Dashboard
-Route::get('/manager/dashboard', [ManagerController::class, 'dashboard'])
-    ->middleware(['auth', 'role:manager'])
-    ->name('manager.dashboard');
+// 💰 Cashier dashboard
+Route::get('/cashier/dashboard', [CashierController::class, 'index'])
+    ->middleware(['auth', 'role:cashier'])
+    ->name('cashier.dashboard');
 
-// Product Index (Manager only)
-Route::get('/products', [ProductController::class, 'index'])
-    ->middleware(['auth', 'role:manager'])
-    ->name('products.index');
+// 📦 Product routes (Entry Clerk + Manager)
+Route::middleware(['auth', 'role:manager|entry_clerk'])->group(function () {
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{id}/restock', [ProductController::class, 'showRestockForm'])->name('products.restock.form');
+    Route::post('/products/{id}/restock', [ProductController::class, 'restock'])->name('products.restock');
+});
 
+// ✏️ Product editing and reporting (Manager only)
+Route::middleware(['auth', 'role:manager'])->group(function () {
+    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
+});
 
-Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
-Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
-Route::get('/products/{id}/restock', [ProductController::class, 'showRestockForm'])->name('products.restock.form');
-Route::post('/products/{id}/restock', [ProductController::class, 'restock'])->name('products.restock');
-
-// POS routes
-Route::middleware(['auth'])->group(function () {
+// 🛒 POS routes (Cashier + Manager)
+Route::middleware(['auth', 'role:manager|cashier'])->group(function () {
     Route::get('/pos', [POSController::class, 'index'])->name('pos.index');
     Route::post('/pos/add', [POSController::class, 'addToCart'])->name('sales.store');
     Route::delete('/pos/remove/{id}', [POSController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/pos/checkout', [POSController::class, 'checkout'])->name('sales.checkout');
 });
 
-// Reports (manager only)
-Route::get('/reports', [ReportsController::class, 'index'])
-    ->middleware(['auth', 'role:manager'])
-    ->name('reports.index');
-
-
-// Logout
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('/');
-})->name('logout');
-
-
-
-// Auth routes (login, register view, etc.)
+// 🔐 Auth scaffolding
 require __DIR__.'/auth.php';
