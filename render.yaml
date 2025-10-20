@@ -19,7 +19,7 @@ services:
       - key: DB_PASSWORD
         value: your-db-password
 
-  - type: private
+  - type: worker
     name: supermarket-db
     env: docker
     plan: starter
