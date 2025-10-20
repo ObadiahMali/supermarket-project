@@ -18,17 +18,23 @@ WORKDIR /var/www
 # Copy project files
 COPY . .
 
-# Install PHP dependencies
+# ✅ Create .env file from example
+RUN cp .env.example .env
+
+# ✅ Install PHP dependencies
 RUN composer install --optimize-autoloader --no-dev
 
-# Build frontend assets
+# ✅ Build frontend assets
 RUN npm install && npm run build
 
-# Generate app key (optional if not set in .env)
+# ✅ Generate app key
 RUN php artisan key:generate
 
-# Expose port
+# ✅ Cache config (optional but recommended)
+RUN php artisan config:cache
+
+# ✅ Expose port for Laravel's internal server
 EXPOSE 8000
 
-# Start Laravel
+# ✅ Start Laravel
 CMD php artisan serve --host=0.0.0.0 --port=8000
