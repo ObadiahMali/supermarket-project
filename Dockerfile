@@ -34,7 +34,7 @@ RUN php artisan key:generate
 RUN php artisan config:clear && php artisan config:cache
 
 # ✅ Run database migrations
-RUN php artisan migrate --force
+# RUN php artisan migrate --force
 
 # ✅ Expose port for Laravel's internal server
 EXPOSE 8000
